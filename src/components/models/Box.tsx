@@ -13,11 +13,11 @@ export default function Box({ position = [0, 0, 0] }: BoxProps) {
   const [hovered, setHovered] = useState(false)
   const [active, setActive] = useState(false)
 
-  // Animación en cada frame
+  // Animación en cada frame - solo rotación en Y
   useFrame((state, delta) => {
     if (meshRef.current) {
       meshRef.current.rotation.y += delta * 0.5
-      meshRef.current.rotation.x += delta * 0.2
+      meshRef.current.rotation.x += delta * 0.5
     }
   })
 
@@ -33,7 +33,7 @@ export default function Box({ position = [0, 0, 0] }: BoxProps) {
       receiveShadow
     >
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial 
+      <meshStandardMaterial
         color={hovered ? 'hotpink' : 'orange'}
         metalness={0.3}
         roughness={0.4}
