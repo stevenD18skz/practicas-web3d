@@ -1,7 +1,7 @@
 'use client'
 
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Environment, Grid } from '@react-three/drei'
+import { Stats, OrbitControls, Environment, Grid } from '@react-three/drei'
 import { Suspense } from 'react'
 import Box from '@/components/models/Box'
 import Snoopy from '@/components/models/Snoopy'
@@ -14,29 +14,35 @@ export default function Scene3D() {
         camera={{ position: [5, 5, 5], fov: 50 }}
         shadows
       >
+        {/* Debug */}
         <primitive object={new THREE.AxesHelper(5)} />
+        <Stats
+          showPanel={0} // 0: FPS, 1: MS, 2: MB, 3+: custom
+          className="absolute bottom-0 left-0"
+        />
+
         {/* Iluminación */}
         <ambientLight intensity={0.5} />
-        <directionalLight 
-          position={[10, 10, 5]} 
+        <directionalLight
+          position={[10, 10, 5]}
           intensity={1}
           castShadow
         />
-        
+
         {/* Controles de cámara */}
-        <OrbitControls 
-          enableDamping 
+        <OrbitControls
+          enableDamping
           dampingFactor={0.05}
           minDistance={2}
           maxDistance={20}
         />
-        
+
         {/* Grid de referencia */}
         <Grid args={[10, 10]} />
-        
+
         {/* Entorno/fondo */}
         <Environment preset="sunset" />
-        
+
         {/* Tu contenido 3D */}
         <Suspense fallback={null}>
           <Box position={[3, 1, 0]} />
