@@ -58,6 +58,46 @@ export function DirectionalLightWithHelper({
             intensity={intensity}
             color={color}
             castShadow={castShadow}
+            
+        />
+    )
+}
+
+// Componente de SpotLight con helper visual
+interface SpotLightWithHelperProps {
+    position?: [number, number, number]
+    intensity?: number
+    color?: string | number
+    angle?: number
+    penumbra?: number
+    castShadow?: boolean
+    showHelper?: boolean
+}
+
+export function SpotLightWithHelper({
+    position = [0, 10, 0],
+    intensity = 40,
+    color = 'white',
+    angle = Math.PI / 4,
+    penumbra = 0.5,
+    castShadow = true,
+    showHelper = true,
+}: SpotLightWithHelperProps) {
+    const lightRef = useRef<THREE.SpotLight>(null!)
+
+    // El helper solo se muestra si showHelper es true
+    useHelper(showHelper && lightRef, THREE.SpotLightHelper, 'cyan')
+
+    return (
+        <spotLight
+            ref={lightRef}
+            position={position}
+            intensity={intensity}
+            distance={1}
+            color={color}
+            angle={angle}
+            penumbra={penumbra}
+            castShadow={castShadow}
         />
     )
 }

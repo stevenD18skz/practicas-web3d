@@ -1,9 +1,9 @@
-import Scene3D from '@/components/Scene3D'
+import LivingRoom from '@/components/world/rooms/LivingRoom'
 
 export default function Home() {
   return (
     <main className="relative">
-      <Scene3D />
+      <LivingRoom />
       
       {/* UI overlay */}
       <div className="absolute top-4 left-4 text-white bg-black/50 p-4 rounded">
