@@ -5,12 +5,12 @@ import { PointerLockControls } from '@react-three/drei'
 import { useRef } from 'react'
 
 export default function FPSControls() {
-  const controlsRef = useRef()
-  
+  const controlsRef = useRef<any>(null)
+
   return (
     <PointerLockControls
       ref={controlsRef}
-      selector="#lock-button" // Botón para activar
+      selector="#start-button"
     />
   )
 }

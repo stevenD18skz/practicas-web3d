@@ -3,7 +3,7 @@
 import { Center } from '@react-three/drei'
 
 import Box from '@/components/Box'
-import Snoopy from '@/components/pets/Snoopy'
+import InteractableSnoopy from '@/components/pets/InteractableSnoopy'
 import Table from '@/components/furniture/Table'
 import Window from '@/components/furniture/Window'
 import Floor from '@/components/world/Floor'
@@ -33,8 +33,8 @@ export default function LivingRoom(props: any) {
           <meshStandardMaterial color={colorFloor} />
         </mesh>*/}
         {/* Pared Frontal */}
-        <mesh receiveShadow position={[sizeRoom / 2, sizeRoom - sizeRoom/4 , 0]} rotation={[0, 0, Math.PI / 2]}>
-          <boxGeometry args={[sizeRoom/2, 1, sizeRoom]} />
+        <mesh receiveShadow position={[sizeRoom / 2, sizeRoom - sizeRoom / 4, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <boxGeometry args={[sizeRoom / 2, 1, sizeRoom]} />
           <meshStandardMaterial color={colorFloor} />
         </mesh>
       </group>
@@ -43,7 +43,7 @@ export default function LivingRoom(props: any) {
       <Box position={[3, 1, 0]} />
 
       <Center top position={[0, 0, 0]}>
-        <Snoopy />
+        <InteractableSnoopy id="snoopy-sala" name="Snoopy" position={[0, 0, 0]} />
       </Center>
 
       <Center top position={[5, 0, 5]}>
