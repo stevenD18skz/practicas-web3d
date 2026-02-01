@@ -1,11 +1,14 @@
 'use client'
 
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Environment } from '@react-three/drei'
+import { OrbitControls, Environment, Center } from '@react-three/drei'
 import { Suspense, useMemo } from 'react'
-import DebugTools, { DirectionalLightWithHelper, SpotLightWithHelper, useDebugControls } from '@/components/DebugTools'
-import { Object3D, RepeatWrapping } from 'three'
-import { useTexture } from '@react-three/drei'
+import DebugTools, { useDebugControls } from '@/components/DebugTools'
+import { Object3D } from 'three'
+import { useRef } from 'react'
+
+import { useHelper } from '@react-three/drei'
+import * as THREE from 'three'
 
 import Box from '@/components/Box'
 import Snoopy from '@/components/pets/Snoopy'
@@ -15,17 +18,35 @@ import Window from '@/components/furniture/Window'
 
 import Floor from '@/components/world/Floor'
 
-export default function Scene3D() {
-  const { showLightHelpers } = useDebugControls()
-
- 
-
-  const colorFloor = "#5C330A"
-  const sizeRoom = 100
-
+function SceneLights() {
+  const lightRef = useRef<THREE.SpotLight>(null!)
+  useHelper(lightRef, THREE.SpotLightHelper)
 
   // useMemo evita que se cree un nuevo Object3D en cada render
-  const target = useMemo(() => new Object3D(), []);
+  const target = useMemo(() => new Object3D(), [])
+
+  return (
+    <>
+      <spotLight
+        ref={lightRef}
+        color={"white"}              // Color de la luz
+        position={[-10, 4, 0]}       // Posición (define dirección de rayos)
+        angle={Math.PI / 6}          // Ángulo del cono de luz
+        distance={80}                // Distancia máxima de la luz
+        intensity={20}               // Brillo
+        decay={0.5}                  // Atenuación por distancia
+        penumbra={0.21}                 // Gradualidad de la luz
+        target={target}              // Punto de destino
+        castShadow                   // Habilita proyección de sombras
+      />
+      <primitive object={target} position={[0, 0, 0]} />
+    </>
+  )
+}
+
+export default function Scene3D() {
+  const colorFloor = "#5C330A"
+  const sizeRoom = 100
 
   return (
     <div className="w-full h-screen">
@@ -37,22 +58,7 @@ export default function Scene3D() {
         <DebugTools />
 
         {/* Iluminación */}
-        
-        
-
-        <spotLight
-          color={"white"}
-          position={[-10, 4, 0]}
-          intensity={20}
-          distance={80}
-          decay={0.5}
-          angle={Math.PI / 4}
-          penumbra={1}
-          target={target} 
-          castShadow
-        />
-
-        <primitive object={target} position={[0, 0, 0]} />
+        <SceneLights />
 
         {/* Controles de cámara */}
         <OrbitControls
@@ -67,7 +73,6 @@ export default function Scene3D() {
 
         {/* Suelo y paredes */}
         <group>
-           
           <Floor size={sizeRoom} />
           <mesh receiveShadow position={[-sizeRoom / 2, sizeRoom / 2, 0]} rotation={[0, 0, Math.PI / 2]}>
             <boxGeometry args={[sizeRoom, 1, sizeRoom]} />
@@ -87,14 +92,28 @@ export default function Scene3D() {
           </mesh>
         </group>
 
-        {/* Tu contenido 3D */}
+        {/* contenido 3D */}
         <Suspense fallback={null}>
           <Box position={[3, 1, 0]} />
-          <Snoopy position={[0, 1, 0]} />
-          <Table position={[5, 0, 5]} />
-          <Chair position={[5, 0, 5]} rotation={[0, 0, 0]} />
-          <Window position={[0, 8, -14]} rotation={[0, 0, 0]} />
-          <Window position={[-14, 4, 0]} rotation={[0, Math.PI / 2, 0]} />
+
+          <Center top position={[0, 0, 0]}>
+            <Snoopy />
+          </Center>
+
+          <Center top position={[5, 0, 5]}>
+            <Table />
+          </Center>
+
+          <Center top position={[3, 0, 5]}>
+            <Chair />
+          </Center>
+
+          <Center top position={[0, 0, -14]}>
+            <Window />
+          </Center>
+          <Center top position={[-14, 0, 0]}>
+            <Window rotation={[0, Math.PI / 2, 0]} />
+          </Center>
         </Suspense>
       </Canvas>
     </div>

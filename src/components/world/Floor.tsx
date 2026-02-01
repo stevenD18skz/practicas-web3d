@@ -5,9 +5,9 @@ import { RepeatWrapping } from 'three'
 export default function Floor({ size }: { size: number }) {
     // Cargar múltiples texturas a la vez
     const textures = useTexture({
-        map: '/textures/stained_pine_diff_1k.jpg',            // Color/Diffuse
-        displacementMap: '/textures/stained_pine_disp_1k.png', // Displacement/Altura
-        normalMap: '/textures/stained_pine_nor_gl_1k.png'      // Normal map (simula relieve)
+        map: '/textures/floor/stained_pine_diff_1k.jpg',            // Color/Diffuse
+        displacementMap: '/textures/floor/stained_pine_disp_1k.png', // Displacement/Altura
+        normalMap: '/textures/floor/stained_pine_nor_gl_1k.png'      // Normal map (simula relieve)
     })
 
     // Configurar repetición para todas las texturas

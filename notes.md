@@ -16,6 +16,54 @@
 
 ---
 
+## 🪹 INTRODUCCIÓN A THREE.JS 🥟
+
+### ¿Qué es?
+
+Three.js es una librería que hace fácil crear gráficos 3D en el navegador. Por debajo usa **WebGL**, que es una tecnología compleja para hablar con la tarjeta gráfica (GPU). Three.js simplifica las matemáticas difíciles y el código repetitivo.
+
+### Conceptos Fundamentales
+
+Imagínate que vas a rodar una película. Necesitas 3 cosas básicas:
+
+1. **Scene (Escena):** Es el "mundo" o el set de rodaje. Aquí pones tus objetos, luces y cámaras. Si no está en la escena, no existe.
+2. **Camera (Cámara):** Es el "ojo" del espectador. Define qué parte de la escena se ve y desde qué ángulo.
+3. **Renderer (Renderizador):** Es el "artista" que toma lo que ve la cámara y lo dibuja en tu pantalla (en el elemento `<canvas>`).
+
+### ¿Qué compone un objeto 3D?
+
+En Three.js, un objeto visible se llama típicamente **Mesh** (Malla). Un Mesh siempre necesita dos cosas:
+
+1. **Geometry (Geometría):** Es la forma o el esqueleto. Define los puntos (vértices) en el espacio 3D.
+    * Ejemplos: `boxGeometry` (cubo), `sphereGeometry` (esfera), `planeGeometry` (plano).
+2. **Material (Material):** Es la piel o la apariencia. Define cómo reacciona a la luz, el color, si es brillante o mate.
+    * Ejemplos: `meshStandardMaterial` (realista), `meshBasicMaterial` (plano, sin sombras).
+
+```math
+Mesh = Geometría + Material
+```
+
+### El Espacio 3D (Coordenadas)
+
+Vivimos en un sistema de 3 ejes (X, Y, Z). El centro del mundo es `[0, 0, 0]`.
+
+* **X (Rojo):** Izquierda (-) / Derecha (+)
+* **Y (Verde):** Abajo (-) / Arriba (+)  *(Nota: En otras apps 3D a veces Y es profundidad, pero en Three.js Y es "arriba")*
+* **Z (Azul):** Lejos/Atrás (-) / Cerca/Adelante (+)
+
+**Unidades:** Son abstractas. Normalmente consideramos `1 unidad = 1 metro`.
+
+### Rotaciones (¡Ojo con esto!)
+
+Las computadoras prefieren los **Radianes** en lugar de Grados.
+
+* Círculo completo (360°) = `2 * PI` (~6.28)
+* Media vuelta (180°) = `PI` (~3.14)
+* Ángulo recto (90°) = `PI / 2` (~1.57)
+
+> **Tip:** En el código siempre usa `Math.PI`.
+> Ejemplo: Para rotar 90 grados en X: `rotation={[Math.PI / 2, 0, 0]}`
+
 ## 📦 Cargando Modelos 3D (GLTF/GLB)
 
 ### Usando gltfjsx
@@ -48,99 +96,6 @@ useGLTF.preload('/models/Table.glb') // Pre-carga
 
 ---
 
-## 🌄 Environment (Entorno)
-
-El componente `<Environment />` de drei tiene dos funciones:
-
-1. **Iluminación IBL** - Usa HDRI para iluminar objetos de forma realista
-2. **Fondo de escena** - Puede mostrar el HDRI como cielo
-
-```tsx
-// Solo iluminación (fondo negro)
-<Environment preset="sunset" />
-
-// Iluminación + fondo visible
-<Environment preset="sunset" background />
-
-// Con desenfoque
-<Environment preset="sunset" background blur={0.5} />
-```
-
-### Presets disponibles
-
-`city` | `apartment` | `lobby` | `night` | `warehouse` | `forest` | `studio` | `sunset`
-
----
-
-## 💡 Iluminación
-
-### Tipos de Luces
-
-| Luz | Descripción | Uso típico |
-|-----|-------------|------------|
-| `ambientLight` | Ilumina todo por igual, sin dirección | Luz base para que nada quede 100% negro |
-| `directionalLight` | Rayos paralelos como el sol | Escenas exteriores, sombras definidas |
-| `pointLight` | Emite en todas direcciones desde un punto | Bombillas, velas |
-| `spotLight` | Cono de luz como linterna | Focos, lámparas direccionales |
-| `rectAreaLight` | Luz rectangular como lámpara de escritorio | Ambiente general |
-| `hemiLight` | Luz hemisférica | Ambiente general |
-| `IBLHDRLight` | Luz de iluminación base | Ambiente general |
-
-### DirectionalLight - Propiedades Importantes
-
-```tsx
-<directionalLight
-  position={[10, 10, 5]}      // Posición (define dirección de rayos)
-  intensity={1.5}              // Brillo
-  color="white"                // Color de la luz
-  castShadow                   // Habilita proyección de sombras
-  // Configuración de sombras
-  shadow-mapSize={[1024, 1024]}  // Resolución de sombras
-  shadow-camera-left={-10}       // Área de sombras
-  shadow-camera-right={10}
-  shadow-camera-top={10}
-  shadow-camera-bottom={-10}
-/>
-```
-
-**💡 Tip:** La posición de `directionalLight` solo define la DIRECCIÓN de los rayos, no hay atenuación por distancia.
-
-### Helpers de Luz (Debug)
-
-Para visualizar las luces como en Blender:
-
-```tsx
-import { useHelper } from '@react-three/drei'
-import * as THREE from 'three'
-
-function MyLight() {
-  const lightRef = useRef()
-  useHelper(lightRef, THREE.DirectionalLightHelper, 2, 'yellow')
-  
-  return <directionalLight ref={lightRef} ... />
-}
-```
-
----
-
-## 🎮 OrbitControls - Controles de Cámara
-
-```tsx
-<OrbitControls
-  enableDamping={true}        // Movimiento suave con inercia
-  dampingFactor={0.05}        // Rapidez de frenado (menor = más suave)
-  minDistance={2}             // Zoom mínimo
-  maxDistance={40}            // Zoom máximo
-  maxPolarAngle={Math.PI / 2} // Limita rotación vertical (no ver debajo del suelo)
-  autoRotate                  // Rotación automática
-  enablePan                   // Permite desplazamiento lateral
-/>
-```
-
-**💡 Tip:** `Math.PI / 2` = 90° - útil para limitar que la cámara no pase por debajo del suelo.
-
----
-
 ## 🎨 Materiales
 
 ### Diferencia entre MeshBasicMaterial y MeshStandardMaterial
@@ -162,9 +117,9 @@ function MyLight() {
 />
 ```
 
-- `MeshLambertMaterial` - Reacciona a luz, sin reflejos
-- `MeshPhongMaterial` - Reflejos simples
-- `MeshPhysicalMaterial` - PBR avanzado con clearcoat, transmisión, etc.
+* `MeshLambertMaterial` - Reacciona a luz, sin reflejos
+* `MeshPhongMaterial` - Reflejos simples
+* `MeshPhysicalMaterial` - PBR avanzado con clearcoat, transmisión, etc.
 
 ---
 
@@ -182,8 +137,8 @@ Geometría (forma) + Material (propiedades) + Textura (imagen) = Objeto 3D reali
 
 **UV Mapping** es el proceso de "desenvolver" un modelo 3D en 2D para poder pintarle una textura encima, como desenvolver una caja de cartón.
 
-- **U** = eje horizontal de la textura (equivale a X)
-- **V** = eje vertical de la textura (equivale a Y)
+* **U** = eje horizontal de la textura (equivale a X)
+* **V** = eje vertical de la textura (equivale a Y)
 
 ```
          Modelo 3D              Textura 2D
@@ -264,8 +219,8 @@ texture.repeat.set(4, 4)        // Repetir 4x4 veces
 
 Las texturas de Poly Haven vienen en dos formatos:
 
-- `_nor_gl` = **OpenGL** ✅ (usar este en Three.js)
-- `_nor_dx` = DirectX ❌ (canal verde invertido)
+* `_nor_gl` = **OpenGL** ✅ (usar este en Three.js)
+* `_nor_dx` = DirectX ❌ (canal verde invertido)
 
 ### 🌐 Fuentes de Texturas Gratuitas
 
@@ -289,32 +244,6 @@ Las texturas de Poly Haven vienen en dos formatos:
 | `_ao`, `_occ` | Ambient Occlusion |
 
 **💡 Tip:** Siempre descarga texturas del mismo pack para que las UVs coincidan entre mapas.
-
-
-## 🔄 Animación con useFrame
-
-`useFrame` se ejecuta en cada frame (60fps típicamente):
-
-```tsx
-import { useFrame } from '@react-three/fiber'
-
-function AnimatedBox() {
-  const meshRef = useRef()
-  
-  useFrame((state, delta) => {
-    // delta = tiempo desde el último frame (para animación consistente)
-    meshRef.current.rotation.y += delta * 0.5
-    meshRef.current.rotation.x += delta * 0.5
-  })
-  
-  return <mesh ref={meshRef}>...</mesh>
-}
-```
-
-**💡 Tip:** Multiplicar por `delta` hace que la animación sea consistente independientemente del framerate.
-
----
-
 
 ## 🎮 Modelos 3D Externos (GLTF/GLB) - Guía Completa
 
@@ -374,10 +303,10 @@ El **GLB** es lo mismo pero todo comprimido en un solo archivo binario.
 
 **Configuración recomendada al exportar:**
 
-- ✅ Format: glTF Binary (.glb)
-- ✅ Include → Selected Objects (si solo quieres exportar algunos)
-- ✅ Mesh → Apply Modifiers
-- ✅ Compression (si el modelo es grande)
+* ✅ Format: glTF Binary (.glb)
+* ✅ Include → Selected Objects (si solo quieres exportar algunos)
+* ✅ Mesh → Apply Modifiers
+* ✅ Compression (si el modelo es grande)
 
 #### gltf.report (Herramienta Online)
 
@@ -385,10 +314,10 @@ El **GLB** es lo mismo pero todo comprimido en un solo archivo binario.
 
 Funcionalidades:
 
-- 📊 Ver estadísticas del modelo (vértices, triángulos, texturas)
-- 🔍 Inspeccionar estructura del modelo
-- ⚡ Optimizar/comprimir el modelo
-- 👁️ Preview 3D del modelo
+* 📊 Ver estadísticas del modelo (vértices, triángulos, texturas)
+* 🔍 Inspeccionar estructura del modelo
+* ⚡ Optimizar/comprimir el modelo
+* 👁️ Preview 3D del modelo
 
 #### Otras herramientas útiles
 
@@ -409,14 +338,39 @@ Funcionalidades:
 | Texturas grandes (4K) | Memoria GPU alta, carga lenta |
 | Modelo sin comprimir | Archivo pesado |
 
-#### Métricas recomendadas para web
+#### Métricas recomendadas para web (Verificado ✅)
+
+La información anterior es un excelente punto de partida para garantizar rendimiento en móviles. He verificado las métricas y añadido un desglose detallado por tipo de objeto y estrategia de LOD para optimizar al máximo.
 
 | Métrica | Valor recomendado | Para escenas simples |
 |---------|-------------------|---------------------|
-| **Triángulos totales** | < 100,000 | < 50,000 |
-| **Por modelo decorativo** | < 5,000 | < 2,000 |
+| **Triángulos totales (Escena)** | < 100,000 | < 50,000 |
+| **Por modelo decorativo** | < 2,000 - 5,000 | < 1,000 |
 | **Texturas** | 1K-2K max | 512px-1K |
-| **Tamaño archivo** | < 5MB | < 2MB |
+| **Tamaño archivo** | < 10MB (Carga rápida) | < 2MB |
+
+#### 📏 Presupuesto de Polígonos por Rol (Triángulos)
+
+Estas son las cantidades de triángulos recomendadas para mantener 60 FPS en navegadores web (incluyendo móviles de gama media).
+
+| Rol del Objeto | Ejemplos | Valor Recomendado 🌟 | Máximo (Desktop) ⚠️ |
+|---|---|---|---|
+| **Personaje Principal** | El jugador (siempre en cámara) | **4,000 - 10,000** | ~15,000 - 20,000 |
+| **NPC / Enemigos** | Personajes secundarios | **1,500 - 5,000** | ~8,000 |
+| **Props Grandes** | Mesa, Silla, Cama, Vehículo | **500 - 1,500** | ~3,000 |
+| **Props Pequeños** | Tazas, Libros, Armas de mano | **50 - 300** | ~800 |
+| **Decoración/Entorno** | Árboles, Piedras (se instancian) | **200 - 1,000** | ~2,500 |
+| **Estructuras** | Paredes, Suelos (Shapes simples) | **12 - 200** | ~500 |
+
+#### 🔍 Niveles de Detalle (LOD - Level of Detail)
+
+Se recomienda tener 3 versiones del modelo si es muy detallado. Usa `<Detailed />` en R3F para cambiar automáticamente según la distancia a la cámara.
+
+| Nivel LOD | Descripción | Distancia Aprox. | Objetivo Triángulos (Ej. Personaje 10k) |
+|---|---|---|---|
+| **LOD 0** (High) | Primer plano, detalle completo. | 0m - 10m | **100%** (~10,000 tris) |
+| **LOD 1** (Med) | Distancia media, reduce detalles finos. | 10m - 25m | **~50%** (~5,000 tris) |
+| **LOD 2** (Low) | Lejano, solo silueta y formas base. | > 25m | **~20%** (~2,000 tris) |
 
 #### Técnicas de optimización
 
@@ -478,14 +432,157 @@ function Trees() {
 
 #### Checklist antes de usar un modelo
 
-- [ ] ¿Tiene menos de 10,000 triángulos? (para objetos individuales)
-- [ ] ¿Las texturas son 2K o menos?
-- [ ] ¿El archivo pesa menos de 5MB?
-- [ ] ¿Tiene UV mapping correcto?
-- [ ] ¿Las transformaciones están aplicadas? (Blender: Ctrl+A)
-- [ ] ¿El modelo está centrado en el origen?
+* [ ] ¿Tiene menos de 10,000 triángulos? (para objetos individuales)
+* [ ] ¿Las texturas son 2K o menos?
+* [ ] ¿El archivo pesa menos de 5MB?
+* [ ] ¿Tiene UV mapping correcto?
+* [ ] ¿Las transformaciones están aplicadas? (Blender: Ctrl+A)
+* [ ] ¿El modelo está centrado en el origen?
 
 **💡 Tip:** Usa `console.log(nodes)` para ver la estructura del modelo y qué meshes contiene.
+
+## 🌄 Environment (Entorno)
+
+El componente `<Environment />` de drei tiene dos funciones:
+
+1. **Iluminación IBL** - Usa HDRI para iluminar objetos de forma realista
+2. **Fondo de escena** - Puede mostrar el HDRI como cielo
+
+```tsx
+// Solo iluminación (fondo negro)
+<Environment preset="sunset" />
+
+// Iluminación + fondo visible
+<Environment preset="sunset" background />
+
+// Con desenfoque
+<Environment preset="sunset" background blur={0.5} />
+```
+
+### Presets disponibles
+
+`city` | `apartment` | `lobby` | `night` | `warehouse` | `forest` | `studio` | `sunset`
+
+---
+
+## 💡 Iluminación
+
+### Tipos de Luces
+
+| Luz | Descripción | Uso típico |
+|-----|-------------|------------|
+| `ambientLight` | Ilumina todo por igual, sin dirección | Luz base para que nada quede 100% negro |
+| `directionalLight` | Rayos paralelos como el sol | Escenas exteriores, sombras definidas |
+| `pointLight` | Emite en todas direcciones desde un punto | Bombillas, velas |
+| `spotLight` | Cono de luz como linterna | Focos, lámparas direccionales |
+| `rectAreaLight` | Luz rectangular como lámpara de escritorio | Ambiente general |
+| `hemiLight` | Luz hemisférica | Ambiente general |
+| `IBLHDRLight` | Luz de iluminación base | Ambiente general |
+
+### AmbientLight - Propiedades Importantes
+
+```tsx
+<ambientLight
+  color="white"                // Color de la luz
+  intensity={0.5}              // Brillo
+/>
+```
+
+### DirectionalLight - Propiedades Importantes
+
+```tsx
+<directionalLight
+  color="white"                // Color de la luz
+  position={[10, 10, 5]}      // Posición (define dirección de rayos)
+  intensity={1.5}              // Brillo
+  castShadow                   // Habilita proyección de sombras
+  // Configuración de sombras
+  shadow-mapSize={[1024, 1024]}  // Resolución de sombras
+  shadow-camera-left={-10}       // Área de sombras
+  shadow-camera-right={10}
+  shadow-camera-top={10}
+  shadow-camera-bottom={-10}
+/>
+```
+
+### PointLight - Propiedades Importantes
+
+```tsx
+<pointLight
+  color="white"                // Color de la luz
+  position={[4, 10, 4]}        // Posición (define dirección de rayos)
+  intensity={100}              // Brillo
+  distance={10}                // Distancia máxima de la luz
+  decay={2}                    // Atenuación por distancia
+  castShadow                   // Habilita proyección de sombras
+/>
+```
+
+### SpotLight - Propiedades Importantes
+
+```tsx
+<spotLight
+  color={"white"}              // Color de la luz
+  position={[-10, 4, 0]}       // Posición (define dirección de rayos)
+  angle={Math.PI / 4}          // Ángulo del cono de luz
+  distance={80}                // Distancia máxima de la luz
+  intensity={20}               // Brillo
+  decay={0.5}                  // Atenuación por distancia
+  penumbra={1}                 // Gradualidad de la luz
+  target={target}              // Punto de destino
+  castShadow                   // Habilita proyección de sombras
+/>
+```
+
+**💡 Tip:** La posición de `directionalLight` solo define la DIRECCIÓN de los rayos, no hay atenuación por distancia.
+
+### Helpers de Luz (Debug)
+
+Para visualizar las luces como en Blender:
+
+```tsx
+import { useHelper } from '@react-three/drei'
+import * as THREE from 'three'
+
+function SceneLights() {
+  const lightRef = useRef<THREE.SpotLight>(null!)
+  useHelper(lightRef, THREE.SpotLightHelper)
+
+  // useMemo evita que se cree un nuevo Object3D en cada render
+  const target = useMemo(() => new Object3D(), [])
+
+  return (
+    <>
+      <spotLight
+        ref={lightRef}
+        color={"white"}
+        //Demas propiedades de spotLight
+      />
+      <primitive object={target} position={[0, 0, 0]} />
+    </>
+  )
+}
+```
+
+---
+
+## 🎮 OrbitControls - Controles de Cámara
+
+```tsx
+<OrbitControls
+  enableDamping={true}        // Movimiento suave con inercia
+  dampingFactor={0.05}        // Rapidez de frenado (menor = más suave)
+  minDistance={2}             // Zoom mínimo
+  maxDistance={40}            // Zoom máximo
+  maxPolarAngle={Math.PI / 2} // Limita rotación vertical (no ver debajo del suelo)
+  autoRotate                  // Rotación automática
+  enablePan                   // Permite desplazamiento lateral
+/>
+```
+
+**💡 Tip:** `Math.PI / 2` = 90° - útil para limitar que la cámara no pase por debajo del suelo.
+
+---
 
 ## 🎛️ Debug Tools con Leva
 
@@ -511,10 +608,34 @@ function DebugTools() {
 
 ### Helpers útiles de drei
 
-- `<Stats />` - Muestra FPS, MS, MB
-- `<Grid />` - Cuadrícula de referencia
-- `<GizmoHelper>` - Brújula 3D en esquina
-- `useHelper()` - Visualizar luces, cámaras, etc.
+* `<Stats />` - Muestra FPS, MS, MB
+* `<Grid />` - Cuadrícula de referencia
+* `<GizmoHelper>` - Brújula 3D en esquina
+* `useHelper()` - Visualizar luces, cámaras, etc.
+
+---
+
+## 🔄 Animación con useFrame
+
+`useFrame` se ejecuta en cada frame (60fps típicamente):
+
+```tsx
+import { useFrame } from '@react-three/fiber'
+
+function AnimatedBox() {
+  const meshRef = useRef()
+  
+  useFrame((state, delta) => {
+    // delta = tiempo desde el último frame (para animación consistente)
+    meshRef.current.rotation.y += delta * 0.5
+    meshRef.current.rotation.x += delta * 0.5
+  })
+  
+  return <mesh ref={meshRef}>...</mesh>
+}
+```
+
+**💡 Tip:** Multiplicar por `delta` hace que la animación sea consistente independientemente del framerate.
 
 ---
 
@@ -547,10 +668,10 @@ import { Physics, RigidBody } from '@react-three/rapier'
 
 ### Tipos de colliders
 
-- `cuboid` - Caja
-- `ball` - Esfera
-- `hull` - Envolvente convexa del mesh
-- `trimesh` - Mesh exacto (más lento)
+* `cuboid` - Caja
+* `ball` - Esfera
+* `hull` - Envolvente convexa del mesh
+* `trimesh` - Mesh exacto (más lento)
 
 ---
 
@@ -588,12 +709,20 @@ practicas-web3d/
 
 ## 📖 Recursos Útiles
 
-- [React Three Fiber Docs](https://docs.pmnd.rs/react-three-fiber)
-- [Drei (Helpers)](https://github.com/pmndrs/drei)
-- [Three.js Docs](https://threejs.org/docs/)
-- [Rapier Physics](https://rapier.rs/)
-- [Sketchfab (Modelos gratis)](https://sketchfab.com/)
-- [Poly Haven (HDRIs gratis)](https://polyhaven.com/)
+#### Recursos gratis
+
+* [Sketchfab (Modelos gratis)](https://sketchfab.com/)
+
+* [cg trader (Modelos gratis)](https://cgtrader.com/)
+* [Poly Haven (HDRIs gratis)](https://polyhaven.com/)
+
+#### Documentación
+
+* [React Three Fiber Docs](https://docs.pmnd.rs/react-three-fiber)
+
+* [Drei (Helpers)](https://github.com/pmndrs/drei)
+* [Three.js Docs](https://threejs.org/docs/)
+* [Rapier Physics](https://rapier.rs/)
 
 ---
 
