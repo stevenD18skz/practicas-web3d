@@ -566,6 +566,133 @@ function SceneLights() {
 
 ---
 
+## 😈 SOMBRAS EN THREE.JS & R3F 👿
+
+Las sombras son cruciales para dar profundidad y realismo ("grounding") a los objetos 3D. Sin ellas, los objetos parecen flotar sobre el fondo.
+
+### 1. La Regla de Oro (Checklist)
+
+Para ver sombras, necesitas **activar 3 cosas**:
+
+1. **Canvas (Render)**: Habilitar el mapa de sombras globalmente.
+
+    ```tsx
+    <Canvas shadows ... >
+    ```
+
+2. **Luces (Emisores)**: La luz debe tener permitido "proyectar" sombre.
+
+    ```tsx
+    <directionalLight castShadow />
+    ```
+
+3. **Meshes (Objetos)**: Los objetos deben poder "proyectar" (cast) y "recibir" (receive) sombras.
+
+    ```tsx
+    <mesh castShadow receiveShadow />
+    ```
+
+---
+
+### 2. Tipos de Sombras (Técnicas)
+
+Three.js ofrece varios algoritmos de cálculo de sombras (Shadow Maps), y `@react-three/drei` ofrece alternativas modernas.
+
+#### A. Shadow Maps (Nativas de Three.js)
+
+Son las sombras "reales" calculadas desde la perspectiva de la luz.
+
+| Tipo | Descripción | Costo | Uso |
+|------|-------------|-------|-----|
+| **BasicShadowMap** | Muy rápida, pero pixelada. Sin suavizado. | 🟢 Bajo | Estilos retro / bajo rendimiento. |
+| **PCFShadowMap** | (Default) Bordes suavizados, estándar. | 🟡 Medio | Mayoría de casos. |
+| **PCFSoftShadowMap** | Bordes más suaves, mejor calidad. | 🟡 Medio-Alto | Cuando se busca realismo simple. |
+| **VSMShadowMap** | (Variance) Muy suave, evita artefactos, pero complejo de configurar. | 🔴 Alto | Escenas de alta calidad. |
+
+*Para cambiar el tipo:*
+
+```tsx
+<Canvas shadows={{ type: THREE.PCFSoftShadowMap }} ... >
+```
+
+#### B. Sombras Especiales (Drei)
+
+Son componentes qye "fingir" o calculan sombras de forma diferente, a menudo más estéticas o baratas.
+
+1. **`<ContactShadows>`**:
+    * **Qué es:** Renderiza la escena desde abajo y la proyecta en un plano 2D.
+    * **Ventaja:** Muy suave, "pega" bien el objeto al suelo. Sin clipping.
+    * **Desventaja:** No proyecta sobre otros objetos, solo en el suelo plano.
+    * **Uso:** Presentación de productos, personajes flotando scbre un plano infinito.
+
+2. **`<AccumulativeShadows>`**:
+    * **Qué es:** Acumula múltiples renders de sombras a lo largo del tiempo (frames).
+    * **Ventaja:** Calidad fotorealista, sombras suaves dispersas.
+    * **Desventaja:** Tarda unos frames en generarse (bueno para ecsenas estáticas o bajo movimiento).
+
+3. **`<BakeShadows>`**:
+    * Calcula la sombra una vez y la deja fija. Ideal para estáticos para ahorrar rendimiento.
+
+---
+
+### 3. Luces y sus Sombras
+
+No todas las luces generan sombras igual:
+
+* **DirectionalLight (Sol):** Sombras paralelas y nítidas. Muy eficiente. Usa una "Shadow Camera" ortográfica (caja).
+* **SpotLight (Linterna):** Sombras cónicas que se expanden. Usa una cámara de perspectiva.
+* **PointLight (Bombilla):** Proyecta en **todas direcciones** (6 mapas de sombra). **MUY costoso**. Evitar si es posible.
+* **AmbientLight / HemisphereLight:** **NO tienen sombras**. Son luces de relleno.
+
+---
+
+### 4. Configuración y Trucos (Pro Tips)
+
+#### 🔹 Shadow Bias (El problema de las rayas)
+
+Si ves rayas extrañas sobre tu objeto ("Shadow Acne"), ajusta el bias:
+
+```tsx
+<directionalLight 
+  castShadow 
+  shadow-bias={-0.0001} // Ajustar valores pequeños negativos
+/>
+```
+
+#### � Resolución del Mapa (Calidad vs Rendimiento)
+
+Por defecto es 512x512. Si se ve pixelado, auméntalo (potencias de 2):
+
+```tsx
+<directionalLight 
+  castShadow 
+  shadow-mapSize={[1024, 1024]} // o 2048, 4096 (cuidado con el rendimiento)
+/>
+```
+
+#### 🔹 Área de la Sombra (Clipping)
+
+Las luces direccionales solo calculan sombras dentro de una "caja" específica. Si la sombra se corta, agranda la cámara:
+
+```tsx
+<directionalLight castShadow>
+  <orthographicCamera attach="shadow-camera" args={[-10, 10, 10, -10]} />
+</directionalLight>
+```
+
+*O simplemente ajusta los props `shadow-camera-left`, `right`, `top`, `bottom` directamente en la luz.*
+
+---
+
+### 5. Tabla Resumen: ¿Qué uso?
+
+| Situación | Recomendación |
+|-----------|---------------|
+| **Juego / Mundo completo** | `DirectionalLight` + `Canvas shadows` (PCFSoft) |
+| **Mostrar un Producto (Zapato, Coche)** | `<ContactShadows>` (Queda muy limpio y suave) |
+| **Render Arquitectónico (Quiet)** | `<AccumulativeShadows>` (Realismo máximo) |
+| **Móviles / Bajo Rendimiento** | Baked Shadows (Texturas pintadas) o `BasicShadowMap` |
+
 ## 🎮 OrbitControls - Controles de Cámara
 
 ```tsx

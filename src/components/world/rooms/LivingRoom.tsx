@@ -30,16 +30,16 @@ function SceneLights() {
       <spotLight
         ref={lightRef}
         color={"white"}              // Color de la luz
-        position={[-10, 4, 0]}       // Posición (define dirección de rayos)
-        angle={Math.PI / 6}          // Ángulo del cono de luz
-        distance={80}                // Distancia máxima de la luz
-        intensity={20}               // Brillo
+        position={[-13.8, 7, 0]}       // Posición (define dirección de rayos)
+        angle={Math.PI / 3}          // Ángulo del cono de luz
+        distance={64}                // Distancia máxima de la luz
+        intensity={16}               // Brillo
         decay={0.5}                  // Atenuación por distancia
-        penumbra={0.21}                 // Gradualidad de la luz
+        penumbra={0.125}                 // Gradualidad de la luz
         target={target}              // Punto de destino
         castShadow                   // Habilita proyección de sombras
       />
-      <primitive object={target} position={[0, 0, 0]} />
+      <primitive object={target} position={[0, 7, 0]} />
     </>
   )
 }
@@ -71,6 +71,7 @@ export default function Scene3D() {
         {/* Entorno/fondo  */}
         <Environment preset="forest" background />
 
+        {/* CONTENIDO 3D  */}
         {/* Suelo y paredes */}
         <group>
           <Floor size={sizeRoom} />
@@ -104,14 +105,14 @@ export default function Scene3D() {
             <Table />
           </Center>
 
-          <Center top position={[3, 0, 5]}>
+          {/* <Center top position={[3, 0, 5]}>
             <Chair />
-          </Center>
+          </Center> */}
 
-          <Center top position={[0, 0, -14]}>
+          <Center top position={[0, 5, -14]}>
             <Window />
           </Center>
-          <Center top position={[-14, 0, 0]}>
+          <Center top position={[-14, 5, 0]}>
             <Window rotation={[0, Math.PI / 2, 0]} />
           </Center>
         </Suspense>
