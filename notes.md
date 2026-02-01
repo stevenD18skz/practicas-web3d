@@ -947,6 +947,145 @@ Tu estructura de escena debería verse así:
 <UIOverlay />           {/* Crosshair HTML encima del Canvas */}
 ```
 
+### 5. Colisiones y Detección de Zonas (Triggers)
+
+Ahora que caminas, ¡puedes atravesar paredes! Para evitarlo (y saber dónde estás), necesitas detectar colisiones.
+
+#### A. Método "Barato" (Matemáticas AABB) 📦
+
+*Analogía: Cajas de Zapatos apiladas en un almacén.*
+
+**AABB** significa **A**xis-**A**ligned **B**ounding **B**ox (Caja Delimitadora Alineada a los Ejes).
+Es la forma más primitiva de colisión. Imagina que envuelves a tus personajes y muebles en cajas de cartón que **NO pueden rotar**. Siempre miran al Norte.
+
+* **Ventaja:** Matemáticas ultra rápidas (solo sumas y restas).
+* **Desventaja:** Si tu personaje es un palo largo y rota 45 grados, la caja AABB se hace enorme y choca con el aire (falsos positivos).
+
+**El Algoritmo:**
+¿Se tocan las cajas?
+
+```javascript
+si (Jugador.derecha > Pared.izquierda &&
+    Jugador.izquierda < Pared.derecha &&
+    Jugador.arriba > Pared.abajo && ...) {
+    ¡CHOQUE!
+}
+```
+
+---
+
+#### B. Método "Pro" (Física Real con Rapier) 🏎️
+
+*Analogía: Fall Guys / Rocket League*
+
+Imagina que tus objetos 3D son **fantasmas**: se ven pero se atraviesan.
+Rapier es quien les da "cuerpo sólido" (Masa, Fricción, Rebote).
+
+Para usarlo, envuelves tu JSX en `<RigidBody>`.
+
+**Conceptos Clave:**
+
+1. **RigidBody:** El "Alma" física. Decide si el objeto se mueve, cae por gravedad o es estático.
+    * `type="dynamic"`: Una pelota, una caja, el jugador (Sufre gravedad).
+    * `type="fixed"`: El suelo, paredes, una casa (Inamovible).
+    * `type="kinematic"`: Un ascensor o plataforma móvil (Se mueve pero nada lo empuja).
+2. **Collider:** La "Forma". Puede ser distinta al visual.
+    * *Ejemplo:* Un árbol visualmente es complejo, pero su collider puede ser un simple cilindro (CylinderCollider) para ahorrar CPU.
+
+**🌟 LO QUE TU BUSCAS: SENSORES (Triggers)**
+*Analogía: Las cajas de items en Mario Kart o la línea de meta.*
+
+Son paredes invisibles que **NO chocan** (las atraviesas) pero **AVISAN** cuando pasas por ellas. Es perfecto para detectar "Entró a la cocina" o "Pisó lava".
+
+```tsx
+<RigidBody 
+  type="fixed" 
+  sensor // <--- ¡LA CLAVE! Esto lo convierte en "fantasma detectable"
+  onIntersectionEnter={() => console.log("¡Entraste a la Zona!")}
+  onIntersectionExit={() => console.log("¡Saliste!")}
+>
+  {/* El cuerpo es invisible (sin mesh), solo geometría física */}
+  <cuboidCollider args={[5, 5, 5]} /> 
+</RigidBody>
+```
+
+---
+
+#### C. Raycasting (El Puntero Láser) 🔫
+
+*Analogía: Disparar en Call of Duty o picar bloques en Minecraft.*
+
+No tiene nada que ver con "chocar" con el cuerpo. Es puramente visual/matemático.
+Imagina que un **rayo láser invisible** sale desde el centro de tu cámara (tu cruz de mira).
+
+El `Raycaster` te dice:
+
+1. **Qué** tocó ese láser.
+2. A qué **distancia**.
+3. En qué **punto exacto** (x,y,z).
+
+**¿Cuándo usarlo?**
+
+* **Disparos:** ¿Le di al enemigo?
+* **Interacción:** "Presionar F para abrir puerta" (Si estás mirando la puerta y estás cerca).
+* **Hover:** Resaltar un objeto cuando lo miras.
+
+```tsx
+// Ejemplo: Detectar qué miras cada frame
+useFrame((state) => {
+  // Lanza rayo desde el centro (0,0) de la cámara
+  state.raycaster.setFromCamera({ x: 0, y: 0 }, state.camera)
+  
+  // Verifica si el rayo corta algo
+  const hits = state.raycaster.intersectObjects(scene.children)
+  
+  if (hits.length > 0) {
+    // hits[0] es el objeto más cercano (el primero que tocó el láser)
+    const objetoMirado = hits[0].object
+    console.log("Estás mirando:", objetoMirado.name)
+    
+    // Ejemplo: Cambiar color si está cerca (menos de 3 metros)
+    if (hits[0].distance < 3) {
+      // Activar UI de "Abrir Puerta"
+    }
+  }
+})
+```
+
+---
+
+### Resumen: ¿Cuál uso?
+
+| Tu Necesidad | Usa... | Ejemplo |
+|--------------|--------|---------|
+| "Quiero que no atraviese paredes" | **Rapier (RigidBody)** | Paredes, Suelo. |
+| "Quiero saber si entró a la habitación" | **Rapier (Sensor)** | Checkpoints, Zonas de daño, Cambio de música. |
+| "Quiero saber qué está mirando" | **Raycasting** | Mirar items, Textos informativos al pasar el mouse. |
+| "Quiero disparar una bala instantánea" | **Raycasting** | Francotirador, Puntero láser. |
+
+---
+
+#### D. Optimización: ¡No calcules todo! (Octrees y Spatial Hashing) 🚀
+
+Si tienes 1,000 objetos y cada uno verifica si choca con los otros 999... ¡Tu PC explota! (1 millón de cálculos por frame). Necesitas trucos para **solo revisar lo que está cerca**.
+
+##### 1. Octrees (El Pastel Dividido) 🍰
+
+*Analogía: Zoom de Google Maps.*
+Divides tu mundo 3D en 8 cubos grandes. Si un cubo está vacío, lo ignoras por completo. Si está lleno, lo divides en otros 8 cubitos más pequeños, y así recursivamente.
+
+* **Uso:** Motores gráficos, escenas estáticas complejas.
+* **Lógica:** "¿Para qué calcular si choco con la cocina si estoy en el jardín?". El Octree descarta la cocina entera en un solo chequeo.
+
+##### 2. Spatial Hashing (El Tablero de Ajedrez) 🏁
+
+*Analogía: Casilleros de correo o la cuadrícula de "Hundir la flota".*
+Divides el mundo en una cuadrícula infinita. Cada objeto se registra en su celda (bucket).
+Para ver colisiones, **solo miras tu celda y las vecinas**.
+
+* **Uso:** Física en tiempo real (Rapier usa una variante de esto o BVH), Minecraft (Chunks).
+* **Ventaja:** Muy rápido de actualizar si las cosas se mueven mucho.
+
 ## ⚛️ Física con Rapier (para el futuro)
 
 ```bash
