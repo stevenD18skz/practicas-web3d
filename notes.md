@@ -742,29 +742,132 @@ function DebugTools() {
 
 ---
 
-## 🔄 Animación con useFrame
+## 🎬 ANIMACIONES EN R3F (La Guía Completa)
 
-`useFrame` se ejecuta en cada frame (60fps típicamente):
+En 3D, todo se mueve frame por frame. Aquí tienes las 3 formas maestras de animar.
+
+### 1. El Corazón: `useFrame` (Loop Infinito)
+
+Es el equivalente a `requestAnimationFrame`. Se ejecuta 60 veces por segundo (60 FPS).
+Si quieres mover algo manualmente (procedural), va aquí.
+
+#### A. Delta Time (Independencia del Frame Rate)
+
+**Nunca** sumes un valor fijo (ej. `x += 0.01`) porque si alguien tiene un monitor de 120Hz, ¡su juego irá al doble de velocidad!
+Multiplica siempre por `delta` (tiempo en segundos desde el último frame).
 
 ```tsx
-import { useFrame } from '@react-three/fiber'
+useFrame((state, delta) => {
+  // ✅ Correcto: Velocidad constante en cualquier PC
+  ref.current.rotation.y += delta * 2 // 2 radianes por segundo
+})
+```
 
-function AnimatedBox() {
-  const meshRef = useRef()
+#### B. Lerp (Linear Interpolation) - Suavizado Mágico
+
+En lugar de teletransportar objetos, usamos **Linear Interpolation** para que se "deslicen" suavemente hacia su destino.
+Fórmula: `valor_actual = lerp(valor_actual, destino, suavidad)`
+
+```tsx
+import { MathUtils } from 'three'
+
+useFrame((state, delta) => {
+  // Interpolación suave del movimiento (Ease out)
+  // El factor 0.1 suaviza; delta * 5 ajusta la velocidad
+  ref.current.position.x = MathUtils.lerp(
+    ref.current.position.x, 
+    targetPosition, 
+    0.1
+  )
+})
+```
+
+#### C. Oscilación (Idle Movement)
+
+Para que las cosas floten o respiren, usa funciones seno/coseno con el reloj global.
+
+```tsx
+useFrame((state) => {
+  const t = state.clock.getElapsedTime()
   
-  useFrame((state, delta) => {
-    // delta = tiempo desde el último frame (para animación consistente)
-    meshRef.current.rotation.y += delta * 0.5
-    meshRef.current.rotation.x += delta * 0.5
+  // Flotar arriba/abajo suavemente
+  ref.current.position.y = Math.sin(t) * 0.5 // Rango -0.5 a 0.5
+  
+  // Rotación tipo "péndulo"
+  ref.current.rotation.z = Math.cos(t * 2) * 0.1
+})
+```
+
+---
+
+### 2. Librerías Externas (Tweening & Resortes)
+
+No reinventes la rueda para transiciones complejas.
+
+| Librería | Tipo | ¿Cuándo usarla? |
+|----------|------|-----------------|
+| **@react-spring/three** | Físicas (Springs) | Interacciones UI, Hover, Drag. Se siente "orgánico" y elástico. |
+| **framer-motion-3d** | Declarativo | Si ya amas Framer Motion en web. Transiciones simples de estado (Layout). |
+| **GSAP** | Timelines | **Cine**. Secuencias complejas: "La cámara baja, luego explota algo, luego texto". |
+
+#### Ejemplo con React Spring (Física Elástica)
+
+```tsx
+import { useSpring, animated } from '@react-spring/three'
+
+function BouncyBox() {
+  const [active, setActive] = useState(false)
+  
+  const { scale } = useSpring({ 
+    scale: active ? 1.5 : 1,
+    config: { mass: 1, tension: 170, friction: 26 } // Configuración de resorte
   })
-  
-  return <mesh ref={meshRef}>...</mesh>
+
+  return (
+    <animated.mesh 
+      scale={scale} 
+      onClick={() => setActive(!active)}
+    >
+      <boxGeometry />
+      <meshStandardMaterial color="hotpink" />
+    </animated.mesh>
+  )
 }
 ```
 
-**💡 Tip:** Multiplicar por `delta` hace que la animación sea consistente independientemente del framerate.
-
 ---
+
+### 3. Animaciones de Personajes (GLTF & Actions)
+
+Los modelos `.glb` (como Mixamo) traen clips de animación ("Idle", "Run", "Die").
+Usamos `useAnimations` de Drei.
+
+#### State Machines (Máquinas de Estado)
+
+No mezcles animaciones a lo loco. Piensa en **Estados**.
+Un personaje NO puede estar "Corriendo" y "Muriendo" a la vez.
+
+```tsx
+import { useAnimations, useGLTF } from '@react-three/drei'
+
+function Character() {
+  const { scene, animations } = useGLTF('/model.glb')
+  const { actions } = useAnimations(animations, scene)
+  
+  useEffect(() => {
+    // Transición suave entre estados (Fade In/Out)
+    actions['Idle'].reset().fadeIn(0.5).play()
+    
+    return () => {
+      actions['Idle'].fadeOut(0.5)
+    }
+  }, []) // Cambiar dependencia a [estadoActual]
+
+  return <primitive object={scene} />
+}
+```
+
+**💡 Tip:** Para lógica compleja de estados (ej. saltar solo si estás en el suelo), considera usar librerías como **XState** o simplemente un `useEffect` bien estructurado con switch/case.
 
 ## ⚛️ Física con Rapier (para el futuro)
 

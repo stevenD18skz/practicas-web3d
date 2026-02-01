@@ -12,9 +12,21 @@ export default function Snoopy(props: any) {
   const groupRef = useRef<Group>(null)
 
   // Animación en cada frame - solo rotación en Y
+  // Animación compuesta: Rotación base + Flotar (Idle) + Balanceo
   useFrame((state, delta) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.5
+      const t = state.clock.getElapsedTime()
+
+      // 1. Rotación continua suave (giro sobre sí mismo)
+      groupRef.current.rotation.y += delta * 0.2
+
+      // 2. Flotar arriba/abajo (Idle Animation)
+      // Math.sin(t) va de -1 a 1. Multiplicamos por 0.1 para que sea sutil (10cm)
+      // Sumamos 0.5 para que no se hunda en el suelo si el origen está en 0
+      groupRef.current.position.y = Math.sin(t * 2) * 0.1
+
+      // 3. Balanceo lateral (como si caminara o se meciera)
+      groupRef.current.rotation.z = Math.cos(t * 2) * 0.05
     }
   })
 

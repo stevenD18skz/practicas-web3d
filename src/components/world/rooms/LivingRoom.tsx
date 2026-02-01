@@ -66,6 +66,9 @@ export default function Scene3D() {
           dampingFactor={0.05}
           minDistance={2}
           maxDistance={40}
+          maxPolarAngle={Math.PI / 2 - 0.1} // Limita para no ver por debajo del suelo (90 grados - un pelín)
+          autoRotate // 🎥 Animación automática de cámara (Gira sola si no tocas)
+          autoRotateSpeed={0.5} // Velocidad suave
         />
 
         {/* Entorno/fondo  */}
