@@ -44,14 +44,26 @@ function SceneLights() {
   )
 }
 
+import FPSControls from '@/components/controls/FPSControls'
+import { usePlayerMovement } from '@/hooks/usePlayerMovement'
+
+// Componente invisible que maneja la lógica de movimiento del jugador
+function Player() {
+  usePlayerMovement()
+  return null
+}
+
 export default function Scene3D() {
   const colorFloor = "#5C330A"
   const sizeRoom = 100
 
+  // Obtenemos el estado de freeCam desde los controles de debug
+  const { freeCam } = useDebugControls()
+
   return (
     <div className="w-full h-screen">
       <Canvas
-        camera={{ position: [5, 5, 5], fov: 50 }}
+        camera={{ position: [5, 1.6, 5], fov: 50 }} // Altura de ojos (1.6m)
         shadows
       >
         {/* Debug */}
@@ -60,16 +72,19 @@ export default function Scene3D() {
         {/* Iluminación */}
         <SceneLights />
 
-        {/* Controles de cámara */}
-        <OrbitControls
-          enableDamping
-          dampingFactor={0.05}
-          minDistance={2}
-          maxDistance={40}
-          maxPolarAngle={Math.PI / 2 - 0.1} // Limita para no ver por debajo del suelo (90 grados - un pelín)
-          autoRotate // 🎥 Animación automática de cámara (Gira sola si no tocas)
-          autoRotateSpeed={0.5} // Velocidad suave
-        />
+        {/* LOGICA DE CONTROLES: FPS vs ORBIT - Alternar según el checkbox de Debug */}
+        {freeCam ? (
+          <OrbitControls
+            makeDefault // Importante para que tome el control de la cámara
+            minDistance={2}
+            maxDistance={50}
+          />
+        ) : (
+          <>
+            <FPSControls />
+            <Player />
+          </>
+        )}
 
         {/* Entorno/fondo  */}
         <Environment preset="forest" background />
@@ -107,10 +122,6 @@ export default function Scene3D() {
           <Center top position={[5, 0, 5]}>
             <Table />
           </Center>
-
-          {/* <Center top position={[3, 0, 5]}>
-            <Chair />
-          </Center> */}
 
           <Center top position={[0, 5, -14]}>
             <Window />

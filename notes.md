@@ -869,6 +869,84 @@ function Character() {
 
 **💡 Tip:** Para lógica compleja de estados (ej. saltar solo si estás en el suelo), considera usar librerías como **XState** o simplemente un `useEffect` bien estructurado con switch/case.
 
+## 🎞️ Navegación en Primera Persona (FPS) 🍿
+
+Crear un control tipo "Minecraft" o "Call of Duty" requiere separar la **Mirada** (Mouse) del **Movimiento** (Teclado).
+
+### 1. Tipos de Controles en R3F
+
+| Control | Descripción | Uso Ideal |
+|---------|-------------|-----------|
+| **OrbitControls** | Gira *alrededor* de un objeto central. | Model viewers, ecommerce, editores. |
+| **FirstPersonControls** | (De Three.js) Clásico "Fly mode". Mueves la cámara libremente. | Editores de nivel. |
+| **PointerLockControls** | **El estándar FPS**. Bloquea el cursor en el centro y gira la cámara con el mouse delta. | Juegos FPS, Walking Sims, Museos virtuales. |
+
+### 2. La Receta del FPS
+
+Para lograrlo necesitas 3 ingredientes trabajando juntos:
+
+#### A. PointerLockControls (La Mirada)
+
+Este componente de `@react-three/drei` hace la magia de ocultar el cursor.
+
+```tsx
+<PointerLockControls selector="#boton-jugar" />
+```
+
+#### B. El Crosshair (La Mira)
+
+Como el cursor desaparece, necesitas dibujar un `div` en el centro de la pantalla (UI) para que el jugador sepa dónde mira.
+
+```tsx
+<div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white rounded-full" />
+```
+
+#### C. Lógica de Movimiento (Vector Math)
+
+Aquí es donde muchos fallan. No basta con sumar `z += 1`.
+Debes moverte **hacia donde mira la cámara**.
+
+1. **Capturar Input:** Guardar qué teclas (WASD) están presionadas.
+2. **Vector Frontal:** `input.forward - input.backward`
+3. **Vector Lateral:** `input.left - input.right`
+4. **Normalizar:** ¡Muy importante! Si presionas W + D, la velocidad no debe ser el doble (hipotenusa). `.normalize()` lo arregla.
+5. **Aplicar Rotación:** Usar `direction.applyEuler(camera.rotation)` para que "Adelante" sea "Adelante de la cámara", no "Norte del mundo".
+
+```typescript
+// Ejemplo simplificado del Hook
+useFrame((state, delta) => {
+  const speed = 5
+  direction.subVectors(front, side).normalize().multiplyScalar(speed * delta)
+  
+  // Mover la cámara
+  state.camera.translateX(direction.x)
+  state.camera.translateZ(direction.z)
+})
+```
+
+### 3. Física y "Feel" 🏃‍♂️
+
+Para que se sienta profesional, evita cambiar la posición directamente. Usa **Velocidad**.
+
+* **Sin física (Arcade):** `pos = pos + speed` (Se detiene en seco).
+* **Con inercia:**
+  * `velocity += acceleration` (al presionar tecla).
+  * `velocity *= friction` (al soltar, ej. 0.9 para frenado suave).
+  * `pos += velocity`
+
+### 4. Integración Final
+
+Tu estructura de escena debería verse así:
+
+```tsx
+<Canvas>
+  <FPSControls />       {/* Maneja la rotación con Mouse */}
+  <PlayerLogic />       {/* Componente invisible que maneja WASD */}
+  <SceneContent />      {/* Tu mundo 3D */}
+</Canvas>
+<UIOverlay />           {/* Crosshair HTML encima del Canvas */}
+```
+
 ## ⚛️ Física con Rapier (para el futuro)
 
 ```bash

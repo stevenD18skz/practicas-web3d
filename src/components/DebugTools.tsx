@@ -12,6 +12,7 @@ export function useDebugControls() {
         showStats: true,
         showGizmo: true,
         showLightHelpers: true,
+        freeCam: false // Nuevo control para alternar cámara
     })
 }
 
@@ -58,7 +59,7 @@ export function DirectionalLightWithHelper({
             intensity={intensity}
             color={color}
             castShadow={castShadow}
-            
+
         />
     )
 }
