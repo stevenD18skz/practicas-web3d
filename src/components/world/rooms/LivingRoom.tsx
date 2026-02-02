@@ -6,7 +6,9 @@ import Box from '@/components/Box'
 import InteractableSnoopy from '@/components/pets/InteractableSnoopy'
 import Table from '@/components/furniture/Table'
 import Window from '@/components/furniture/Window'
-import Floor from '@/components/world/Floor'
+import Floor from '@/components/world/elemtns/Floor'
+import Walls from '@/components/world/elemtns/Walls'
+import Door from '@/components/world/elemtns/door'
 
 export default function LivingRoom(props: any) {
   const colorFloor = "#5C330A"
@@ -17,26 +19,10 @@ export default function LivingRoom(props: any) {
       {/* Suelo y paredes */}
       <group>
         <Floor size={sizeRoom} />
-        {/* Pared Izquierda */}
-        <mesh receiveShadow position={[-sizeRoom / 2, sizeRoom / 2, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <boxGeometry args={[sizeRoom, 1, sizeRoom]} />
-          <meshStandardMaterial color={colorFloor} />
-        </mesh>
-        {/* Pared Fondo */}
-        <mesh receiveShadow position={[0, sizeRoom / 2, -sizeRoom / 2]} rotation={[Math.PI / 2, 0, 0]}>
-          <boxGeometry args={[sizeRoom, 1, sizeRoom]} />
-          <meshStandardMaterial color={colorFloor} />
-        </mesh>
-        {/* Pared Derecha 
-        <mesh receiveShadow position={[0, sizeRoom / 2, sizeRoom / 2]} rotation={[Math.PI / 2, 0, 0]}>
-          <boxGeometry args={[sizeRoom, 1, sizeRoom]} />
-          <meshStandardMaterial color={colorFloor} />
-        </mesh>*/}
         {/* Pared Frontal */}
-        <mesh receiveShadow position={[sizeRoom / 2, sizeRoom - sizeRoom / 4, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <boxGeometry args={[sizeRoom / 2, 1, sizeRoom]} />
-          <meshStandardMaterial color={colorFloor} />
-        </mesh>
+        <Walls size={sizeRoom} position="back" />
+        <Walls size={sizeRoom} position="left" />
+        <Door size={sizeRoom} position="front" />
       </group>
 
       {/* contenido 3D */}
@@ -50,7 +36,7 @@ export default function LivingRoom(props: any) {
         <Table />
       </Center>
 
-      <Center top position={[0, 5, -14]}>
+      <Center top position={[0, 5, -15.1]} rotation={[0, Math.PI, 0]}>
         <Window />
       </Center>
       <Center top position={[-14, 5, 0]}>

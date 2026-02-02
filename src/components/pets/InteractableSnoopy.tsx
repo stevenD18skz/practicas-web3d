@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import { Raycaster, Vector3, Group } from 'three'
 import Snoopy from './Snoopy'
-import { useGameStore } from '@/store/gameStore'
+import { useGameStore } from '@/logic/gameStore'
 
 interface InteractableSnoopyProps {
     id: string

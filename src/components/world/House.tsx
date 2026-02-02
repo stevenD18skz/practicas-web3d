@@ -14,6 +14,8 @@ import { usePlayerMovement } from '@/hooks/usePlayerMovement'
 // Habitaciones
 import LivingRoom from '@/components/world/rooms/LivingRoom'
 import Kitchen from '@/components/world/rooms/kitchen'
+import RoomBig from '@/components/world/rooms/RoomBig'
+import GameUI from '../ui/GameUI'
 
 // Componente invisible que maneja la lógica de movimiento del jugador
 function Player() {
@@ -21,37 +23,35 @@ function Player() {
     return null
 }
 
+import { useGameStore } from '@/logic/gameStore'
+import Bathroom from './rooms/Bathroom'
+
 // Componente que rastrea en qué habitación estás
 function RoomTracker() {
     const { camera } = useThree()
-    const [room, setRoom] = useState('Desconocido')
+    const isPlaying = useGameStore(state => state.isPlaying)
+    const currentRoom = useGameStore(state => state.currentRoom)
+    const setRoom = useGameStore(state => state.setRoom)
 
     useFrame(() => {
         const x = camera.position.x
         const z = camera.position.z
 
         // Lógica simple de coordenadas (AABB)
-        // Sala: está centrada en 0,0 con tamaño 32 (aprox de -16 a 16)
         if (x > -16 && x < 16 && z > -16 && z < 16) {
-            if (room !== 'Sala') setRoom('Sala')
+            if (currentRoom !== 'Sala') setRoom('Sala')
         }
-        // Cocina: está en x=32, con tamaño 32 (aprox de 16 a 48)
         else if (x > 16 && x < 48 && z > -16 && z < 16) {
-            if (room !== 'Cocina') setRoom('Cocina')
+            if (currentRoom !== 'Cocina') setRoom('Cocina')
         }
         else {
-            if (room !== 'Exterior') setRoom('Exterior')
+            if (currentRoom !== 'Exterior') setRoom('Exterior')
         }
     })
-    console.log(room)
 
-    return (
-        <Html position={[0, 0, 0]} fullscreen style={{ pointerEvents: 'none' }}>
-            <div className="absolute top-4 right-4 bg-white/80 p-2 rounded font-mono font-bold text-black border-2 border-black">
-                📍 ZONA: {room}
-            </div>
-        </Html>
-    )
+    if (!isPlaying) return null
+
+    return null
 }
 
 function SceneLights() {
@@ -65,7 +65,7 @@ function SceneLights() {
                 ref={lightRef}
                 color={"white"}
                 position={[-13.8, 7, 0]}
-                angle={Math.PI / 3}
+                angle={Math.PI / 6}
                 distance={64}
                 intensity={16}
                 decay={0.5}
@@ -84,6 +84,10 @@ export default function House() {
     // Obtenemos el estado de freeCam desde los controles de debug
     const { freeCam } = useDebugControls()
 
+    const sizeFloor = 32
+    const heightWall = 8
+
+
     return (
         <div className="w-full h-screen">
             <Canvas
@@ -92,9 +96,7 @@ export default function House() {
             >
                 {/* Herramientas Globales */}
                 <DebugTools />
-                <SceneLights />
                 <RoomTracker />
-                <Environment preset="forest" background />
 
                 {/* LOGICA DE CONTROLES */}
                 {freeCam ? (
@@ -106,16 +108,29 @@ export default function House() {
                     </>
                 )}
 
+                {/* Luces y Entorno */}
+                <SceneLights />
+                <Environment preset="forest" background />
+
                 {/* MUNDO - Aquí cargamos las habitaciones */}
                 <Suspense fallback={null}>
                     {/* SALA PRINCIPAL */}
-                    <LivingRoom />
+                    <LivingRoom position={[0, 0, 0]} />
 
-                    {/* COCINA - La movemos 100 unidades a la derecha para que no se solape */}
+                    {/* COCINA */}
                     <Kitchen position={[32, 0, 0]} />
+
+                    {/* Habitación grande */}
+                    <RoomBig position={[0, 0, 32]} />
+
+                    {/* Baño */}
+                    <Bathroom position={[32, 0, 32]} />
                 </Suspense>
 
             </Canvas>
+
+            {/* Interfaz de Usuario (Overlay) */}
+            <GameUI />
         </div>
     )
 }

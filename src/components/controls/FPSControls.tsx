@@ -2,7 +2,7 @@
 'use client'
 
 import { PointerLockControls } from '@react-three/drei'
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 
 export default function FPSControls() {
   const controlsRef = useRef<any>(null)

@@ -1,0 +1,26 @@
+import Floor from '@/components/world/elemtns/Floor'
+import Box from '@/components/Box'
+import Walls from '@/components/world/elemtns/Walls'
+
+export default function RoomBig(props: any) {
+    const sizeRoom = 32
+
+    return (
+        <group {...props}>
+            {/* Suelo y Paredes de la Cocina */}
+            <group>
+                <Floor size={sizeRoom} />
+                {/* Pared Fondo */}
+                <Walls size={sizeRoom} position="front" />
+                <Walls size={sizeRoom} position="left" />
+            </group>
+
+            {/* Muebles de Cocina (Simulados) */}
+            {/* Nevera */}
+            <Box position={[5, 2, 0]} />
+
+            {/* Mesón */}
+            <Box position={[-5, 2, 0]} />
+        </group>
+    )
+}

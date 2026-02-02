@@ -1,27 +1,25 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useGameStore } from '@/store/gameStore'
+import { useEffect } from 'react'
+import { useGameStore } from '@/logic/gameStore'
 
 export default function GameUI() {
   const food = useGameStore(state => state.food)
   const fedPets = useGameStore(state => state.fedPets)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const isPlaying = useGameStore(state => state.isPlaying)
+  const setIsPlaying = useGameStore(state => state.setIsPlaying)
+  const currentRoom = useGameStore(state => state.currentRoom)
 
-  // Escuchar cambios en el PointerLock para saber si estamos jugando o en pausa
+  // Escuchar cambios en el PointerLock para sincronizar el estado global
   useEffect(() => {
     const handleLockChange = () => {
-      // Si hay un elemento bloqueado, estamos jugando. Si es null, estamos en pausa/menú.
-      if (document.pointerLockElement) {
-        setIsPlaying(true)
-      } else {
-        setIsPlaying(false)
-      }
+      // Sincronizamos el estado del store con el estado real del puntero
+      setIsPlaying(!!document.pointerLockElement)
     }
 
     document.addEventListener('pointerlockchange', handleLockChange)
     return () => document.removeEventListener('pointerlockchange', handleLockChange)
-  }, [])
+  }, [setIsPlaying])
 
   return (
     <>
@@ -44,9 +42,10 @@ export default function GameUI() {
               <div className="flex items-center gap-2"><span className="bg-white/10 px-2 rounded">ESC</span> Menú</div>
             </div>
 
-            {/* ESTE ES EL BOTÓN MÁGICO QUE ACTIVA "FPSControls" POR SU ID */}
+            {/* ESTE ES EL BOTÓN MÁGICO QUE ACTIVA "FPSControls" */}
             <button
               id="start-button"
+              onClick={() => setIsPlaying(true)}
               className="w-full bg-white text-black font-bold text-xl py-4 px-8 rounded-xl hover:scale-105 hover:bg-blue-50 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] pointer-events-auto cursor-pointer"
             >
               JUGAR AHORA 🐾
@@ -71,6 +70,10 @@ export default function GameUI() {
         <h3 className="font-bold mb-3 border-b border-white/20 pb-2 text-xs uppercase tracking-widest text-gray-400">Estado</h3>
 
         <div className="space-y-2 font-mono text-sm">
+          <p className="flex items-center justify-between text-blue-300">
+            <span>📍 Ubicación:</span>
+            <span className="font-bold">{currentRoom}</span>
+          </p>
           <p className={`flex items-center justify-between ${fedPets.length >= 1 ? "text-green-400" : "text-gray-300"}`}>
             <span>🐕 Alimentados:</span>
             <span className="font-bold text-lg">{fedPets.length}/1</span>
