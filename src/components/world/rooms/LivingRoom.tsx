@@ -3,7 +3,7 @@
 import { Center } from '@react-three/drei'
 
 import Box from '@/components/Box'
-import InteractableSnoopy from '@/components/pets/InteractableSnoopy'
+import InteractableSnoopy from '@/components/pets/snoopy/InteractableSnoopy'
 import Table from '@/components/furniture/Table'
 import Window from '@/components/furniture/Window'
 import Floor from '@/components/world/elemtns/Floor'

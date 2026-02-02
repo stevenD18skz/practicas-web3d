@@ -1,9 +1,8 @@
 import Floor from '@/components/world/elemtns/Floor'
 import Box from '@/components/Box'
 import Walls from '@/components/world/elemtns/Walls'
-import Cat from '@/components/pets/cat/Cat'
 
-export default function RoomBig(props: any) {
+export default function RoomGenerator(props: any) {
     const sizeRoom = 32
 
     return (
@@ -12,7 +11,7 @@ export default function RoomBig(props: any) {
             <group>
                 <Floor size={sizeRoom} />
                 {/* Pared Fondo */}
-                <Walls size={sizeRoom} position="front" />
+                <Walls size={sizeRoom} position="back" />
                 <Walls size={sizeRoom} position="right" />
             </group>
 
@@ -22,11 +21,6 @@ export default function RoomBig(props: any) {
 
             {/* Mesón */}
             <Box position={[-5, 2, 0]} />
-
-            {/* Gato */}
-            <Cat position={[0, 2, 0]} scale={0.125} />
-
-
         </group>
     )
 }
